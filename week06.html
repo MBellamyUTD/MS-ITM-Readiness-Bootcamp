@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 6: SQL Design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* VOICE: friendly coach, clear and encouraging, never cute
+   IDEA: a lab workbook from the Comet Campus Bookstore, each section a page you work through
+   PICTURE: live code editors and the bookstore receipt the students are building
+   COLOUR and TYPE: UTD green field, orange for the one thing to do next; Lexend titles, Inter body, JetBrains Mono code
+   LAYOUT: green band header with progress, single reading column, sticky section links above 900px */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#0c1a13);--panel:light-dark(#f3f6f2,#13261c);--ink:light-dark(#14211a,#e8efe9);--muted:light-dark(#4d5c53,#a9bcae);
+--green:#154734;--band:light-dark(#154734,#0f3324);--orange:#e87500;--orange-ink:light-dark(#a85300,#ffab5c);
+--line:light-dark(#d7e0d9,#24402f);--code:light-dark(#0f1d16,#07110c);--codeink:#e6f0e8;--ok:light-dark(#11713f,#5fd391);--bad:light-dark(#b42318,#ff8a80)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16.5px/1.6 Inter,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Lexend,Inter,sans-serif;line-height:1.1;text-wrap:balance;margin:0 0 .5em}
+h1{font-size:clamp(32px,5vw,48px);font-weight:600}h2{font-size:28px;font-weight:600;margin-top:.2em}h3{font-size:19px;font-weight:600}
+a{color:var(--orange-ink)}
+code{font-family:"JetBrains Mono",monospace;font-size:.92em;background:var(--panel);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+html{scroll-padding-top:72px}
+.band{padding:clamp(28px,4vw,56px) max(5vw,16px)}
+header.band{background:var(--band);color:#fff}
+.hwrap{max-width:1040px;margin:auto;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:40px;align-items:center}
+.kicker{font-weight:600;color:#ffc58f;margin:0 0 8px}
+header p{color:#d6e6db;max-width:56ch}
+.meter{margin-top:22px;max-width:420px}
+.meter .track{height:12px;background:rgba(255,255,255,.18);border-radius:99px;overflow:hidden}
+.meter .fill{height:100%;width:0;background:var(--orange);border-radius:99px;transition:width .5s}
+.meter small{display:block;margin-top:6px;color:#d6e6db}
+#status{display:inline-block;margin-top:14px;font-size:14px;padding:4px 12px;border-radius:99px;background:rgba(255,255,255,.14)}
+.receipt{width:100%;max-width:340px;justify-self:end}
+nav.scroll{display:flex;gap:6px;padding:10px max(5vw,16px);border-bottom:1px solid var(--line);background:var(--bg);white-space:nowrap}
+nav a{flex:none;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500;padding:8px 12px;border-radius:8px}
+nav a:hover,nav a:focus-visible{background:var(--panel)}
+nav a.done::after{content:" \2713";color:var(--ok)}
+@media(min-width:900px){nav.scroll{position:sticky;top:0;z-index:5}}
+main{max-width:780px;margin:auto;padding:8px max(5vw,16px) 64px}
+section{padding:36px 0;border-bottom:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:15px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{font-weight:600}
+.note{background:var(--panel);border-left:4px solid var(--orange);padding:14px 18px;border-radius:6px;margin:16px 0}
+.note p{margin:.3em 0}
+.ide{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:16px 0;background:var(--code)}
+.ide textarea{display:block;width:100%;border:0;resize:vertical;background:var(--code);color:var(--codeink);font:15px/1.55 "JetBrains Mono",monospace;padding:14px 16px;tab-size:4;outline:none;min-height:90px}
+.ide textarea:focus-visible{box-shadow:inset 0 0 0 2px var(--orange)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 10px;background:light-dark(#e7eee9,#10241a);border-top:1px solid var(--line)}
+.bar label{font-size:14px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.bar select,.stdin{font:15px Inter,sans-serif;padding:8px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-height:40px}
+.stdin{font-family:"JetBrains Mono",monospace;width:100%;min-height:64px;resize:vertical}
+.stdwrap{padding:8px 10px;background:light-dark(#e7eee9,#10241a);border-top:1px solid var(--line)}
+.stdwrap span{font-size:13px;color:var(--muted)}
+button{font:600 15px Inter,sans-serif;min-height:44px;padding:0 16px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+button.go{background:var(--orange);border-color:var(--orange);color:#1a0d00}
+button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+button:disabled{opacity:.5;cursor:default}
+.out{margin:0;padding:12px 16px;min-height:44px;font:14px/1.5 "JetBrains Mono",monospace;white-space:pre-wrap;color:var(--codeink);background:#06100b;border-top:1px solid #1d3527}
+.out:empty::before{content:"Output appears here";color:#6f8a78}
+.out .err{color:#ff9d8f}
+.mcq{background:var(--panel);border-radius:10px;padding:18px;margin:16px 0}
+.opts{display:grid;gap:8px;margin:12px 0}
+.opts button{text-align:left;font-family:"JetBrains Mono",monospace;font-weight:500}
+.opts button.right{border-color:var(--ok);box-shadow:inset 0 0 0 2px var(--ok)}
+.opts button.wrong{border-color:var(--bad);box-shadow:inset 0 0 0 2px var(--bad)}
+.why{display:none;margin:8px 0 0}.why.show{display:block}
+.results{list-style:none;padding:0;margin:12px 0}
+.results li{padding:10px 14px;border-radius:8px;margin:6px 0;background:var(--panel)}
+.results .pass{border-left:4px solid var(--ok)}.results .fail{border-left:4px solid var(--bad)}
+.hints{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.hint{display:none;background:var(--panel);padding:12px 16px;border-radius:8px;margin:8px 0}.hint.show{display:block}
+.reflect textarea{width:100%;min-height:90px;font:16px Inter,sans-serif;padding:12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);margin:6px 0 16px}
+.badge{display:none;align-items:center;gap:10px;font-weight:600;color:var(--ok);margin-top:10px}.badge.show{display:flex}
+.who{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:12px 0}
+.who label{display:grid;gap:4px;font-weight:600;font-size:15px}
+.who input{font:16px Inter,sans-serif;min-height:44px;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+a.submit{display:inline-flex;align-items:center;min-height:48px;padding:0 22px;border-radius:8px;background:var(--orange);color:#1a0d00;font-weight:600;text-decoration:none}
+a.submit:focus-visible{outline:3px solid var(--orange);outline-offset:3px}
+a.submit.off{opacity:.5;pointer-events:none}
+.small{font-size:14px;color:var(--muted)}
+.sqlout{background:var(--panel);border-top:1px solid var(--line);padding:10px 14px;min-height:44px;font-size:14px}
+.sqlout:empty::before{content:"Results appear here";color:var(--muted)}
+.sqlout .err{color:var(--bad);font-family:"JetBrains Mono",monospace;white-space:pre-wrap;margin:0}
+.sqlout .meta{color:var(--muted);margin:6px 0 0;font-size:13px}
+.sqlout .scroll{overflow-x:auto}
+.sqlout table{margin:4px 0;font-size:14px;background:var(--bg)}
+.sqlout td,.sqlout th{white-space:nowrap;padding:6px 10px}
+.sqlout td.num{text-align:right;font-variant-numeric:tabular-nums}
+.sqlout td.null{color:var(--muted);font-style:italic}
+.erd{margin:16px 0;overflow-x:auto}.erd svg{width:100%;min-width:620px;height:auto}
+.erd .tbl rect{fill:var(--panel);stroke:var(--green);stroke-width:1.5}
+:root[data-theme=dark] .erd .tbl rect{stroke:#5fd391}
+.erd text{font:13px "JetBrains Mono",monospace;fill:var(--ink)}
+.erd text.h{font:600 15px Lexend,sans-serif;text-anchor:middle;fill:var(--orange-ink)}
+.erd .links path{stroke:var(--muted);stroke-width:2;fill:none}
+.erd text.card{font:600 13px Inter,sans-serif;fill:var(--muted)}
+.taskres{list-style:none;padding:0;margin:8px 0 20px}
+.taskres li{padding:10px 14px;border-radius:8px;background:var(--panel)}
+.taskres li.pass{border-left:4px solid var(--ok)}.taskres li.fail{border-left:4px solid var(--bad)}
+.timer{font:600 18px Lexend,sans-serif;color:var(--orange-ink)}
+.rcq{padding-left:1.4em}.rcq>li{margin:0 0 26px}
+.rcq fieldset{border:0;padding:0;margin:8px 0 0;display:grid;gap:6px}
+.rcq label{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:8px;cursor:pointer}
+.rcq label:has(input:checked){border-color:var(--orange);box-shadow:inset 0 0 0 1px var(--orange)}
+.rcq input{margin-top:5px;accent-color:var(--orange)}
+.rcq .res{font-weight:600;margin-top:6px}.rcq .ok{color:var(--ok)}.rcq .no{color:var(--bad)}
+.aicheck{display:flex;gap:10px;align-items:flex-start;margin:16px 0}
+.aicheck input{margin-top:5px;width:18px;height:18px;accent-color:var(--orange)}
+.score{font:600 40px Lexend,sans-serif;margin:0}
+footer{max-width:780px;margin:auto;padding:0 max(5vw,16px) 48px;color:var(--muted);font-size:14px}
+@media(max-width:700px){.hwrap{grid-template-columns:1fr}.receipt{justify-self:start;max-width:260px}}
+@media(prefers-reduced-motion:reduce){.meter .fill{transition:none}}
+@media(max-width:600px){table{font-size:13px}}
+</style>
+</head>
+<body>
+<header class="band">
+  <div class="hwrap">
+    <div>
+      <p class="kicker">MS ITM Readiness Bootcamp</p>
+      <h1>Week 6: SQL Design</h1>
+      <p>Summarize the bookstore's sales, change its data safely, and design tables the right way, then take the database readiness check. Every SQL box runs against a real database in your browser.</p>
+      <div class="meter" aria-live="polite"><div class="track"><div class="fill" id="fill"></div></div><small id="ptext">0 of 7 milestones complete</small></div>
+      <span id="status">Loading the database...</span>
+    </div>
+    <svg class="receipt" viewBox="0 0 300 330" role="img" aria-label="A bookstore receipt showing a 10 percent discount">
+      <defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#eef3ef"/></linearGradient></defs>
+      <rect x="42" y="26" width="226" height="292" rx="6" fill="#0a2a1d" opacity=".45"/>
+      <path d="M30 14h226v280l-14 10-14-10-14 10-14-10-14 10-14-10-14 10-14-10-14 10-14-10-14 10-14-10-14 10-14-10-14 10-14-10z" fill="url(#pg)"/>
+      <text x="143" y="48" text-anchor="middle" font-family="Lexend" font-weight="600" font-size="17" fill="#154734">Comet Campus Bookstore</text>
+      <line x1="50" y1="64" x2="236" y2="64" stroke="#154734" stroke-dasharray="4 4"/>
+      <g font-family="JetBrains Mono" font-size="14" fill="#14211a">
+        <text x="50" y="94">GROUP BY category</text>
+        <text x="50" y="124">Subtotal</text><text x="236" y="124" text-anchor="end">62.50</text>
+        <text x="50" y="154" fill="#a85300">Discount 10%</text><text x="236" y="154" text-anchor="end" fill="#a85300">-6.25</text>
+      </g>
+      <line x1="50" y1="174" x2="236" y2="174" stroke="#154734"/>
+      <text x="50" y="208" font-family="Lexend" font-weight="600" font-size="20" fill="#154734">Total</text>
+      <text x="236" y="208" text-anchor="end" font-family="Lexend" font-weight="600" font-size="20" fill="#154734">$56.25</text>
+      <rect x="50" y="236" width="186" height="34" rx="17" fill="#e87500"/>
+      <text x="143" y="258" text-anchor="middle" font-family="Inter" font-weight="600" font-size="14" fill="#1a0d00">HAVING SUM(...) &gt; 90</text>
+    </svg>
+  </div>
+</header>
+
+<nav class="scroll" aria-label="Sections">
+  <a href="index.html">Home</a><a href="#start">Start</a><a href="#agg" data-sec="agg">Aggregates</a><a href="#group">GROUP BY</a><a href="#having" data-sec="having">HAVING</a><a href="#modify">Changing data</a><a href="#create">Creating tables</a><a href="#design" data-sec="design">Design</a><a href="#practice" data-sec="practice">Practice</a><a href="#extension" data-sec="extension">Extension</a><a href="#check" data-sec="check">Readiness check</a><a href="#reflect" data-sec="reflect">Reflect</a><a href="#submit">Submit</a>
+</nav>
+
+<main>
+<section id="start">
+  <h2>Before you start</h2>
+  <p><strong>This week you will:</strong> summarize data with aggregate functions and GROUP BY, change data with INSERT, UPDATE and DELETE, create tables with keys, and design a database with ER diagrams and normalization. This prepares you for BUAN 6320 weeks 4 to 9. Then you will take the <strong>database readiness check</strong>.</p>
+  <p><strong>Watch and practice first:</strong> <a href="https://www.khanacademy.org/computing/computer-programming/sql">Khan Academy: Intro to SQL</a> ("Modifying databases with SQL"), and the ER diagram and normalization sections of <a href="https://www.freecodecamp.org/news/learn-relational-database-design/">freeCodeCamp: Relational Database Design</a>.</p>
+  <div class="note">
+    <p><strong>How to use AI this week</strong></p>
+    <p>Checkpoints and practice queries work as before: your own attempt first, then AI review if you like. The readiness check at the end is taken <strong>without AI</strong>.</p>
+  </div>
+  <p>You are using the same bookstore database as Week 5: <code>publishers</code>, <code>books</code>, <code>customers</code>, <code>orders</code> and <code>order_items</code>. Each run starts from a fresh copy, so experiment freely.</p>
+</section>
+
+<section id="agg">
+  <h2>1. Aggregate functions</h2>
+  <p>Aggregate functions turn many rows into one summary value.</p>
+  <table><thead><tr><th>Function</th><th>Returns</th></tr></thead><tbody>
+  <tr><td><code>COUNT(*)</code></td><td>number of rows</td></tr>
+  <tr><td><code>COUNT(column)</code></td><td>number of rows where that column is not NULL</td></tr>
+  <tr><td><code>SUM</code>, <code>AVG</code></td><td>total and average of a number column</td></tr>
+  <tr><td><code>MIN</code>, <code>MAX</code></td><td>smallest and largest value</td></tr></tbody></table>
+  <div class="ide" data-sql><textarea spellcheck="false" aria-label="SQL editor">SELECT COUNT(*)            AS titles,
+       SUM(stock)          AS books_on_shelves,
+       ROUND(AVG(price), 2) AS avg_price,
+       MIN(price)          AS cheapest,
+       MAX(price)          AS priciest
+FROM books;</textarea></div>
+
+  <div class="mcq" data-mcq="cp1" data-answer="1">
+    <h3>Checkpoint 1: predict before you run</h3>
+    <pre><code>SELECT COUNT(*), COUNT(email)
+FROM customers;</code></pre>
+    <p>There are 5 customers. Ethan Moore has no email on file (NULL). What does this return?</p>
+    <div class="opts"><button>5 and 5</button><button>5 and 4</button><button>4 and 4</button><button>An error</button></div>
+    <p class="why"><code>COUNT(*)</code> counts every row. <code>COUNT(email)</code> skips NULLs, so Ethan is not counted.</p>
+  </div>
+</section>
+
+<section id="group">
+  <h2>2. Grouping with GROUP BY</h2>
+  <p><code>GROUP BY</code> splits rows into groups and runs the aggregate once per group. Every column in the SELECT must either be in the GROUP BY or inside an aggregate function.</p>
+  <div class="ide" data-sql><textarea spellcheck="false" aria-label="SQL editor">SELECT category,
+       COUNT(*)            AS titles,
+       ROUND(AVG(price), 2) AS avg_price
+FROM books
+GROUP BY category
+ORDER BY titles DESC, category;</textarea></div>
+  <p>Grouping works across joins too. Here is the revenue from each order:</p>
+  <div class="ide" data-sql><textarea spellcheck="false" aria-label="SQL editor">SELECT o.order_id,
+       ROUND(SUM(b.price * oi.quantity), 2) AS order_total
+FROM orders o
+JOIN order_items oi ON o.order_id = oi.order_id
+JOIN books b        ON oi.book_id = b.book_id
+GROUP BY o.order_id
+ORDER BY order_total DESC;</textarea></div>
+</section>
+
+<section id="having">
+  <h2>3. Filtering groups with HAVING</h2>
+  <p><code>WHERE</code> filters <strong>rows</strong> before grouping. <code>HAVING</code> filters <strong>groups</strong> after aggregating, so it can use <code>COUNT</code>, <code>SUM</code> and the rest.</p>
+  <div class="ide" data-sql><textarea spellcheck="false" aria-label="SQL editor">SELECT category, COUNT(*) AS titles
+FROM books
+WHERE price > 10            -- rows first
+GROUP BY category
+HAVING COUNT(*) >= 2;       -- then groups</textarea></div>
+
+  <div class="mcq" data-mcq="cp2" data-answer="0">
+    <h3>Checkpoint 2: predict before you run</h3>
+    <pre><code>SELECT category, COUNT(*)
+FROM books
+GROUP BY category
+HAVING COUNT(*) >= 2;</code></pre>
+    <p>The 8 books fall into 5 categories: Analytics (1), Database (2), Infrastructure (1), Management (2) and Programming (2). How many rows come back?</p>
+    <div class="opts"><button>3</button><button>5</button><button>2</button><button>8</button></div>
+    <p class="why">Grouping makes 5 rows, one per category. <code>HAVING</code> keeps only groups with 2 or more books: Database, Management and Programming.</p>
+  </div>
+</section>
+
+<section id="modify">
+  <h2>4. Changing data: INSERT, UPDATE, DELETE</h2>
+  <p>These statements change the table instead of reading it. Always write the <code>WHERE</code> clause on UPDATE and DELETE first: without it, the change hits <strong>every row</strong>.</p>
+  <div class="ide" data-sql><textarea spellcheck="false" aria-label="SQL editor">INSERT INTO books (book_id, title, category, price, stock, publisher_id)
+VALUES (9, 'Intro to AI', 'Analytics', 49.00, 6, 1);
+
+UPDATE books
+SET stock = stock + 10
+WHERE title = 'SQL Intro';
+
+DELETE FROM customers
+WHERE email IS NULL;
+
+SELECT book_id, title, stock FROM books ORDER BY book_id;</textarea></div>
+  <div class="note"><p><strong>Try it:</strong> remove the <code>WHERE</code> line from the UPDATE and run again. Every book gets 10 more copies. In a real database, that mistake reaches production. Your copy here resets on every run.</p></div>
+</section>
+
+<section id="create">
+  <h2>5. Creating tables with keys</h2>
+  <p>A <strong>primary key</strong> uniquely identifies each row. A <strong>foreign key</strong> must match a primary key in another table, which protects the data from orphan rows. <code>NOT NULL</code> makes a column required.</p>
+  <div class="ide" data-sql><textarea spellcheck="false" aria-label="SQL editor">CREATE TABLE authors (
+  author_id INTEGER PRIMARY KEY,
+  name      VARCHAR(100) NOT NULL,
+  country   VARCHAR(50)
+);
+
+CREATE TABLE book_authors (
+  book_id   INTEGER REFERENCES books(book_id),
+  author_id INTEGER REFERENCES authors(author_id),
+  PRIMARY KEY (book_id, author_id)
+);
+
+INSERT INTO authors VALUES (1, 'Grace Hopper', 'USA');
+INSERT INTO book_authors VALUES (1, 1);
+
+SELECT b.title, a.name
+FROM books b
+JOIN book_authors ba ON b.book_id = ba.book_id
+JOIN authors a       ON ba.author_id = a.author_id;</textarea></div>
+  <div class="note"><p><strong>Try it:</strong> add <code>INSERT INTO book_authors VALUES (99, 1);</code> before the SELECT. There is no book 99, so the foreign key blocks it. That is the database protecting you.</p></div>
+</section>
+
+<section id="design">
+  <h2>6. Designing a database: ER diagrams and normalization</h2>
+  <p>Before writing CREATE TABLE, designers sketch an <strong>entity-relationship (ER) diagram</strong>. Entities become tables, attributes become columns, and relationships become keys.</p>
+  <table><thead><tr><th>Relationship</th><th>Bookstore example</th><th>How to build it</th></tr></thead><tbody>
+  <tr><td>One-to-many (1:N)</td><td>One publisher has many books</td><td>Put the "one" side's key in the "many" table as a foreign key (<code>books.publisher_id</code>)</td></tr>
+  <tr><td>Many-to-many (M:N)</td><td>An order has many books; a book appears in many orders</td><td>Add a junction table with both keys (<code>order_items</code>)</td></tr></tbody></table>
+  <p><strong>Normalization</strong> removes repeated data so each fact is stored once. Here is a badly designed orders table:</p>
+  <table><thead><tr><th>order_id</th><th>customer_name</th><th>customer_city</th><th>books</th></tr></thead><tbody>
+  <tr><td>101</td><td>Ana Lopez</td><td>Dallas</td><td>Python Basics, SQL Intro</td></tr>
+  <tr><td>103</td><td>Ana Lopez</td><td>Dallas</td><td>Data Visualization, Python Projects</td></tr></tbody></table>
+  <table><thead><tr><th>Normal form</th><th>Rule</th><th>Problem above</th><th>Fix</th></tr></thead><tbody>
+  <tr><td>1NF</td><td>One value per cell, and a primary key</td><td><code>books</code> holds a list</td><td>One row per book in <code>order_items</code></td></tr>
+  <tr><td>2NF</td><td>Every column depends on the whole key</td><td>In order_items, a book title would depend only on book_id</td><td>Keep titles in <code>books</code></td></tr>
+  <tr><td>3NF</td><td>No column depends on another non-key column</td><td><code>customer_city</code> depends on the customer, not the order</td><td>Move name and city to <code>customers</code>; keep only <code>customer_id</code></td></tr></tbody></table>
+  <p>The bookstore database you have been using is already in 3NF. That is why answering a question often needs a join.</p>
+
+  <div class="mcq" data-mcq="cp3" data-answer="2">
+    <h3>Checkpoint 3: spot the problem</h3>
+    <p>In the bad table above, Ana Lopez moves to Plano. What goes wrong?</p>
+    <div class="opts"><button>Nothing; you update one cell</button><button>The primary key changes</button><button>Her city must be changed on every one of her order rows, and missing one leaves conflicting data</button><button>Her orders are deleted</button></div>
+    <p class="why">Storing the same fact in many rows causes an <strong>update anomaly</strong>. In 3NF, her city lives once in <code>customers</code>, so one UPDATE fixes everything.</p>
+  </div>
+</section>
+
+<section id="practice">
+  <h2>Practice task: manager's report</h2>
+  <p>Write one SQL script for each request, run it, then click <strong>Check</strong>.</p>
+
+  <h3>Q1. Which categories bring in the most revenue?</h3>
+  <p>Return <strong>category and total revenue</strong> (price times quantity, from <code>order_items</code> joined to <code>books</code>), showing only categories with revenue <strong>over $90</strong>, highest first.</p>
+  <div class="ide" data-task="q1"><textarea spellcheck="false" aria-label="SQL editor for question 1">SELECT</textarea></div>
+
+  <h3>Q2. How many books does each publisher have?</h3>
+  <p>Return <strong>publisher name and number of books</strong>, including publishers with <strong>zero</strong> books.</p>
+  <div class="ide" data-task="q2"><textarea spellcheck="false" aria-label="SQL editor for question 2">SELECT</textarea></div>
+
+  <h3>Q3. Update the catalog</h3>
+  <p>Write UPDATE statements that (a) raise the price of every <strong>Database</strong> book by 10%, and (b) set the stock of <strong>Data Visualization</strong> to 10 after a delivery. The checker looks at the books table after your script runs.</p>
+  <div class="ide" data-task="q3"><textarea spellcheck="false" aria-label="SQL editor for question 3">UPDATE books
+</textarea></div>
+
+  <div class="badge" id="pbadge"><svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="13" fill="currentColor"/><path d="M8 14.5l4 4 8-9" stroke="#fff" stroke-width="3" fill="none"/></svg>Manager's report complete. Nice work!</div>
+  <p>Stuck? Unlock hints one at a time.</p>
+  <div class="hints"><button data-hint="1">Hint 1</button><button data-hint="2" disabled>Hint 2</button><button data-hint="3" disabled>Hint 3</button></div>
+  <div class="hint" id="hint1">Q1: join <code>order_items</code> to <code>books</code>, <code>GROUP BY b.category</code>, use <code>SUM(b.price * oi.quantity)</code>, then <code>HAVING</code> and <code>ORDER BY ... DESC</code>.</div>
+  <div class="hint" id="hint2">Q2: start <code>FROM publishers p LEFT JOIN books b</code> and use <code>COUNT(b.book_id)</code>, not <code>COUNT(*)</code>, so a publisher with no books counts 0.</div>
+  <div class="hint" id="hint3">Q3: <code>SET price = price * 1.10 WHERE category = 'Database'</code>, then a second UPDATE with <code>WHERE title = 'Data Visualization'</code>.</div>
+</section>
+
+<section id="extension">
+  <h2>Optional extension: add book reviews</h2>
+  <p>The bookstore wants customer reviews. Sketch the ER relationship on paper first: one customer writes many reviews, and one book has many reviews. Then write a <code>CREATE TABLE reviews</code> with a primary key, foreign keys to <code>books</code> and <code>customers</code>, and a <code>rating</code> column. Insert two reviews and join them to show the book title and customer name.</p>
+  <div class="ide" data-sql data-mark="extension"><textarea spellcheck="false" aria-label="SQL editor for the extension">CREATE TABLE reviews (
+
+);
+</textarea></div>
+</section>
+
+<section id="check">
+  <h2>Database readiness check</h2>
+  <p>This check tells you and your lab managers whether you are ready for BUAN 6320. It takes about 30 minutes: 10 questions (70 points) and two short queries (15 points each). <strong>Take it on your own, without AI or notes.</strong> A score of 70 or higher means you are ready. It does not affect your admission or grades.</p>
+  <div id="rcIntro"><button class="go" id="rcStart">Start the check</button></div>
+  <div id="rcBody" hidden>
+    <p class="timer" id="rcTimer" aria-live="off"></p>
+    <ol class="rcq" id="rcQuestions"></ol>
+    <h3>Query 1 (15 points)</h3>
+    <p>Return each customer's <strong>name and number of orders</strong>, including customers with zero orders.</p>
+    <div class="ide" id="rcB1"><textarea spellcheck="false" aria-label="Readiness query 1 editor">SELECT</textarea></div>
+    <h3>Query 2 (15 points)</h3>
+    <p>Return the <strong>title and total quantity sold</strong> for every book that has sold <strong>more than 1</strong> copy in total.</p>
+    <div class="ide" id="rcB2"><textarea spellcheck="false" aria-label="Readiness query 2 editor">SELECT</textarea></div>
+    <label class="aicheck"><input type="checkbox" id="rcAI"> I used AI or notes during this check (please be honest; it helps your lab managers help you)</label>
+    <p><button class="go" id="rcSubmit">Submit the check</button></p>
+  </div>
+  <div id="rcResult" class="note" hidden></div>
+</section>
+
+<section id="reflect">
+  <h2>Reflection</h2>
+  <div class="reflect">
+    <label for="r1"><strong>1. Which checkpoint surprised you, and why?</strong></label>
+    <textarea id="r1"></textarea>
+    <label for="r2"><strong>2. Did you use AI after your own attempt? What did it change, and why is that better? (Two sentences.)</strong></label>
+    <textarea id="r2"></textarea>
+  </div>
+  <button id="copy">Copy my answers</button> <span id="copied" role="status"></span>
+</section>
+
+<section id="submit">
+  <h2>Submit your progress</h2>
+  <p>Enter your name and email once. The button opens the Weekly Progress form with your milestones, checkpoint answers, practice result and reflections already filled in. Review them, then click Submit in the form.</p>
+  <div class="who">
+    <label for="sname">Name<input id="sname" autocomplete="name"></label>
+    <label for="semail">Email<input id="semail" type="email" autocomplete="email"></label>
+  </div>
+  <p id="summary" class="note"></p>
+  <a class="submit" id="submitLink" href="#submit" target="_blank" rel="noopener">Submit my progress</a>
+  <p class="small">Questions? Post in the Teams channel or join lab manager question hours.</p>
+</section>
+</main>
+<footer>Your progress and reflection answers are saved in this browser only. Python runs locally through Pyodide; nothing you type is sent anywhere.</footer>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<script>
+{
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const store = {get(k){try{return JSON.parse(localStorage.getItem("itmw6:"+k))}catch(e){return null}},set(k,v){try{localStorage.setItem("itmw6:"+k,JSON.stringify(v))}catch(e){}}};
+const MILESTONES = ["cp1","cp2","cp3","practice","extension","readiness","reflect"];
+const done = new Set(store.get("done") || []);
+const mark = id => {done.add(id);store.set("done",[...done]);paint();buildLink();};
+const paint = () => {
+  const n = MILESTONES.filter(m => done.has(m)).length;
+  $("#fill").style.width = (n / MILESTONES.length * 100) + "%";
+  $("#ptext").textContent = n + " of " + MILESTONES.length + " milestones complete";
+  const secOf = {readiness:"check",cp1:"agg",cp2:"having",cp3:"design",practice:"practice",extension:"extension",reflect:"reflect"};
+  for (const m of MILESTONES) { const a = document.querySelector('nav a[data-sec="'+secOf[m]+'"]'); if (a) a.classList.toggle("done", done.has(m)); }
+  if (done.has("practice")) $("#pbadge").classList.add("show");
+};
+
+const PRELUDE = `
+import builtins as _b
+def input(prompt=""):
+    if not _stdin:
+        raise EOFError("The program asked for more input than the input box has. Add another line.")
+    v = _stdin.pop(0)
+    print(f"{prompt}{v}")
+    return v
+`;
+const SQLKIT = "import sqlite3, json, hashlib\n\nSETUP = \"\"\"\nCREATE TABLE publishers (\n  publisher_id INTEGER PRIMARY KEY,\n  name VARCHAR(100) NOT NULL,\n  city VARCHAR(50)\n);\nCREATE TABLE books (\n  book_id INTEGER PRIMARY KEY,\n  title VARCHAR(100) NOT NULL,\n  category VARCHAR(50),\n  price DECIMAL(8,2),\n  stock INTEGER,\n  publisher_id INTEGER REFERENCES publishers(publisher_id)\n);\nCREATE TABLE customers (\n  customer_id INTEGER PRIMARY KEY,\n  name VARCHAR(100) NOT NULL,\n  email VARCHAR(100),\n  city VARCHAR(50)\n);\nCREATE TABLE orders (\n  order_id INTEGER PRIMARY KEY,\n  customer_id INTEGER REFERENCES customers(customer_id),\n  order_date DATE\n);\nCREATE TABLE order_items (\n  order_id INTEGER REFERENCES orders(order_id),\n  book_id INTEGER REFERENCES books(book_id),\n  quantity INTEGER,\n  PRIMARY KEY (order_id, book_id)\n);\nINSERT INTO publishers VALUES (1, 'Comet Press', 'Richardson'), (2, 'Lone Star Books', 'Austin'), (3, 'Data House', 'Dallas'), (4, 'Prairie Publishing', 'Plano');\nINSERT INTO books VALUES\n (1, 'Python Basics', 'Programming', 12.50, 12, 1),\n (2, 'SQL Intro', 'Database', 9.99, 3, 3),\n (3, 'Data Visualization', 'Analytics', 45.00, 0, 3),\n (4, 'Systems Analysis', 'Management', 38.00, 7, 2),\n (5, 'Cloud Computing', 'Infrastructure', 52.00, 4, 2),\n (6, 'Python Projects', 'Programming', 29.50, 9, 1),\n (7, 'Database Design', 'Database', 61.00, 0, 3),\n (8, 'Project Management', 'Management', 33.25, 15, 2);\nINSERT INTO customers VALUES\n (1, 'Ana Lopez', 'ana@example.com', 'Dallas'),\n (2, 'Ben Carter', 'ben@example.com', 'Richardson'),\n (3, 'Chen Wei', 'chen@example.com', 'Plano'),\n (4, 'Divya Rao', 'divya@example.com', 'Dallas'),\n (5, 'Ethan Moore', NULL, 'Frisco');\nINSERT INTO orders VALUES (101, 1, '2027-01-05'), (102, 2, '2027-01-06'), (103, 1, '2027-01-09'), (104, 3, '2027-01-10'), (105, 4, '2027-01-12'), (106, 2, '2027-01-15');\nINSERT INTO order_items VALUES\n (101, 1, 2), (101, 2, 1), (102, 5, 1), (103, 3, 1), (103, 6, 2),\n (104, 7, 1), (104, 1, 1), (105, 8, 3), (106, 4, 1), (106, 2, 2);\n\"\"\"\n\n\ndef split_sql(text):\n    \"\"\"Split a script into statements, respecting quotes and -- comments.\"\"\"\n    out, buf, q, i = [], [], None, 0\n    while i < len(text):\n        ch = text[i]\n        if q:\n            buf.append(ch)\n            if ch == q:\n                q = None\n        elif ch in (\"'\", '\"'):\n            q = ch\n            buf.append(ch)\n        elif ch == \"-\" and text[i:i + 2] == \"--\":\n            while i < len(text) and text[i] != \"\\n\":\n                i += 1\n            continue\n        elif ch == \";\":\n            s = \"\".join(buf).strip()\n            if s:\n                out.append(s)\n            buf = []\n        else:\n            buf.append(ch)\n        i += 1\n    s = \"\".join(buf).strip()\n    if s:\n        out.append(s)\n    return out\n\n\ndef run_script(user, con=None):\n    con = con or sqlite3.connect(\":memory:\")\n    if not con.execute(\"SELECT name FROM sqlite_master WHERE name='books'\").fetchone():\n        con.executescript(SETUP)\n    con.execute(\"PRAGMA foreign_keys = ON\")\n    results = []\n    for stmt in split_sql(user):\n        cur = con.execute(stmt)\n        if cur.description:\n            results.append({\"cols\": [d[0] for d in cur.description], \"rows\": [list(r) for r in cur.fetchall()]})\n        else:\n            results.append({\"msg\": (str(cur.rowcount) + \" row(s) affected\") if cur.rowcount >= 0 else \"Done\"})\n    return results, con\n\n\ndef run_sql_json(user):\n    try:\n        results, _ = run_script(user)\n        return json.dumps({\"results\": results}, default=str)\n    except Exception as e:\n        return json.dumps({\"error\": str(e)})\n\n\ndef canon(rows, ordered):\n    norm = [tuple(round(v, 2) if isinstance(v, float) else v for v in r) for r in rows]\n    if not ordered:\n        norm = sorted(norm, key=repr)\n    return hashlib.sha256(repr(norm).encode()).hexdigest()\n\n\ndef result_rows(user, after):\n    results, con = run_script(user)\n    if after:\n        return [list(r) for r in con.execute(after).fetchall()]\n    sets = [r for r in results if \"rows\" in r]\n    if not sets:\n        raise ValueError(\"Your SQL did not return any rows. Did you write a SELECT?\")\n    return sets[-1][\"rows\"]\n\n\ndef check_json(user, after, ordered, want_hash, want_unordered, want_rows, want_cols):\n    try:\n        rows = result_rows(user, after or None)\n    except Exception as e:\n        return json.dumps({\"ok\": False, \"msg\": \"SQL error: \" + str(e)})\n    if canon(rows, ordered) == want_hash:\n        return json.dumps({\"ok\": True, \"msg\": \"Correct! \" + str(len(rows)) + \" row(s).\"})\n    hint = []\n    if len(rows) != want_rows:\n        hint.append(\"returned \" + str(len(rows)) + \" row(s); expected \" + str(want_rows))\n    elif rows and len(rows[0]) != want_cols:\n        hint.append(\"has \" + str(len(rows[0])) + \" column(s); expected \" + str(want_cols))\n    elif ordered and canon(rows, False) == want_unordered:\n        hint.append(\"has the right rows but in the wrong order\")\n    else:\n        hint.append(\"has the right number of rows, but some values differ\")\n    return json.dumps({\"ok\": False, \"msg\": \"Not yet: your result \" + \"; \".join(hint) + \".\"})\n\n\n\ndef expected(solution, after=None, ordered=False):\n    \"\"\"Build-time helper: hash, row count and column count for a solution.\"\"\"\n    rows = result_rows(solution, after)\n    h = canon(rows, ordered)\n    return {\"hash\": h, \"rows\": len(rows), \"cols\": len(rows[0]) if rows else 0, \"unordered\": canon(rows, False)}\n";
+const status = $("#status");
+const ready = (async () => {
+  const py = await loadPyodide();
+  await py.loadPackage("sqlite3");
+  py.runPython(SQLKIT);
+  status.textContent = "Database ready";
+  return py;
+})().catch(e => { status.textContent = "The database could not load. Check your connection and reload."; throw e; });
+
+async function runPy(src, {stdin = [], vars = {}} = {}) {
+  const py = await ready;
+  const ns = py.globals.get("dict")();
+  for (const [k, v] of Object.entries(vars)) ns.set(k, v);
+  ns.set("_stdin", py.toPy(stdin));
+  const out = [];
+  py.setStdout({batched: s => out.push(s)});
+  py.setStderr({batched: s => out.push(s)});
+  let err = null;
+  try {
+    await py.runPythonAsync(PRELUDE, {globals: ns});
+    await py.runPythonAsync(src, {globals: ns});
+  } catch (e) {
+    const lines = String(e.message).trim().split("\n");
+    const lineHits = lines.filter(l => l.includes('File "<exec>"'));
+    const lm = lineHits.length ? lineHits[lineHits.length - 1].match(/line (\d+)/) : null;
+    err = (lm ? "Line " + lm[1] + ": " : "") + lines[lines.length - 1];
+  }
+  return {out: out.join("\n"), err, ns};
+}
+const show = (pre, r) => {
+  pre.textContent = r.out;
+  if (r.err) { const s = document.createElement("span"); s.className = "err"; s.textContent = (r.out ? "\n" : "") + r.err; pre.appendChild(s); }
+  if (!r.out && !r.err) pre.textContent = "(ran with no output)";
+};
+
+const fit = ta => { ta.rows = Math.max(4, ta.value.split("\n").length + 1); };
+const keys = (ta, run) => ta.addEventListener("keydown", e => {
+  if (e.key === "Tab") { e.preventDefault(); const s = ta.selectionStart; ta.setRangeText("    ", s, ta.selectionEnd, "end"); }
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+});
+
+for (const ide of $$(".ide[data-run]")) {
+  const ta = ide.querySelector("textarea"), original = ta.value;
+  fit(ta); ta.addEventListener("input", () => fit(ta));
+  let stdinBox = null;
+  if (ide.dataset.stdin !== undefined) {
+    const w = document.createElement("div"); w.className = "stdwrap";
+    w.innerHTML = '<span>Input box: what the user types, one answer per line</span>';
+    stdinBox = document.createElement("textarea"); stdinBox.className = "stdin"; stdinBox.value = ide.dataset.stdin; stdinBox.setAttribute("aria-label", "Program input, one line per answer");
+    w.appendChild(stdinBox); ide.appendChild(w);
+  }
+  const bar = document.createElement("div"); bar.className = "bar";
+  const runB = document.createElement("button"); runB.className = "go"; runB.textContent = "Run";
+  const resetB = document.createElement("button"); resetB.textContent = "Reset";
+  bar.append(runB, resetB);
+  const pre = document.createElement("pre"); pre.className = "out"; pre.setAttribute("aria-live", "polite");
+  ide.append(bar, pre);
+  const run = async () => {
+    runB.disabled = true; pre.textContent = "Running...";
+    const stdin = stdinBox ? stdinBox.value.split("\n").filter(l => l.length) : [];
+    const r = await runPy(ta.value, {stdin}); show(pre, r); runB.disabled = false;
+    if (ide.dataset.mark && !r.err && ta.value !== original) mark(ide.dataset.mark);
+  };
+  runB.addEventListener("click", run); keys(ta, run);
+  resetB.addEventListener("click", () => { ta.value = original; fit(ta); pre.textContent = ""; });
+}
+
+for (const q of $$(".mcq")) {
+  const id = q.dataset.mcq, ans = +q.dataset.answer, btns = [...q.querySelectorAll(".opts button")], why = q.querySelector(".why");
+  const reveal = pick => {
+    btns.forEach((b, i) => { b.disabled = true; if (i === ans) b.classList.add("right"); else if (i === pick) b.classList.add("wrong"); });
+    why.innerHTML = (pick === ans ? "<strong>Correct.</strong> " : "<strong>Not quite.</strong> ") + why.innerHTML; why.classList.add("show");
+  };
+  const saved = store.get(id); if (saved !== null) reveal(saved);
+  btns.forEach((b, i) => b.addEventListener("click", () => { store.set(id, i); reveal(i); mark(id); }));
+}
+
+const TASKS = {"q1": {"ordered": true, "hash": "451cc0fe4e2c8d95a45da587324042b7d792074bd3b3486463e109581ea0f016", "unordered": "a2e3510d605bc1fafd423d519c9b1406b81f7013b68838952cbaa47a47228d8a", "rows": 3, "cols": 2, "after": ""}, "q2": {"ordered": false, "hash": "a49ea3e3a3ab61e876d63c81a93a8c8cec8f19608e343de68b1b85e75f384dd0", "unordered": "a49ea3e3a3ab61e876d63c81a93a8c8cec8f19608e343de68b1b85e75f384dd0", "rows": 4, "cols": 2, "after": ""}, "q3": {"ordered": true, "hash": "e6db99d20fd3646e07ebe8f99f8791b9a46e7af8325a87e4d56864f3e7c6bd33", "unordered": "e6db99d20fd3646e07ebe8f99f8791b9a46e7af8325a87e4d56864f3e7c6bd33", "rows": 8, "cols": 3, "after": "SELECT book_id, ROUND(price, 2), stock FROM books ORDER BY book_id"}};
+async function runSQL(sql) { const py = await ready; return JSON.parse(py.globals.get("run_sql_json")(sql)); }
+function renderSQL(box, res) {
+  box.innerHTML = "";
+  if (res.error) { const p = document.createElement("p"); p.className = "err"; p.textContent = "SQL error: " + res.error; box.appendChild(p); return; }
+  if (!res.results.length) { box.textContent = "Nothing to run. Type a query first."; return; }
+  for (const r of res.results) {
+    if (r.msg) { const p = document.createElement("p"); p.className = "meta"; p.textContent = r.msg; box.appendChild(p); continue; }
+    const wrap = document.createElement("div"); wrap.className = "scroll";
+    const t = document.createElement("table"), th = document.createElement("thead"), hr = document.createElement("tr");
+    for (const c of r.cols) { const h = document.createElement("th"); h.textContent = c; hr.appendChild(h); }
+    th.appendChild(hr); t.appendChild(th);
+    const tb = document.createElement("tbody");
+    for (const row of r.rows.slice(0, 50)) {
+      const tr = document.createElement("tr");
+      for (const v of row) { const td = document.createElement("td"); if (v === null) { td.textContent = "NULL"; td.className = "null"; } else { td.textContent = v; if (typeof v === "number") td.className = "num"; } tr.appendChild(td); }
+      tb.appendChild(tr);
+    }
+    t.appendChild(tb); wrap.appendChild(t); box.appendChild(wrap);
+    const m = document.createElement("p"); m.className = "meta"; m.textContent = r.rows.length + " row(s)" + (r.rows.length > 50 ? ", first 50 shown" : ""); box.appendChild(m);
+  }
+}
+function wireSQL(ide, onCheck) {
+  const ta = ide.querySelector("textarea"), original = ta.value, key = ide.dataset.task ? "code_" + ide.dataset.task : null;
+  if (key && store.get(key)) ta.value = store.get(key);
+  fit(ta); ta.addEventListener("input", () => { fit(ta); if (key) store.set(key, ta.value); });
+  const bar = document.createElement("div"); bar.className = "bar";
+  const runB = document.createElement("button"); runB.className = "go"; runB.textContent = "Run";
+  bar.appendChild(runB);
+  let checkB = null;
+  if (onCheck) { checkB = document.createElement("button"); checkB.textContent = "Check"; bar.appendChild(checkB); }
+  const resetB = document.createElement("button"); resetB.textContent = "Reset"; bar.appendChild(resetB);
+  const out = document.createElement("div"); out.className = "sqlout"; out.setAttribute("aria-live", "polite");
+  ide.append(bar, out);
+  const run = async () => {
+    runB.disabled = true; out.textContent = "Running...";
+    const res = await runSQL(ta.value); renderSQL(out, res); runB.disabled = false;
+    if (ide.dataset.mark && !res.error && res.results.some(r => r.rows) && ta.value !== original) mark(ide.dataset.mark);
+  };
+  runB.addEventListener("click", run); keys(ta, run);
+  resetB.addEventListener("click", () => { ta.value = original; fit(ta); out.innerHTML = ""; if (key) store.set(key, null); });
+  if (onCheck) checkB.addEventListener("click", async () => { checkB.disabled = true; await onCheck(ta.value, ide); checkB.disabled = false; });
+}
+for (const ide of $$(".ide[data-sql]")) wireSQL(ide, null);
+const passedTasks = new Set(store.get("tasksPassed") || []);
+for (const ide of $$(".ide[data-task]")) {
+  const id = ide.dataset.task, t = TASKS[id];
+  const ul = document.createElement("ul"); ul.className = "taskres"; ul.setAttribute("aria-live", "polite"); ide.after(ul);
+  wireSQL(ide, async (sql) => {
+    const py = await ready;
+    const r = JSON.parse(py.globals.get("check_json")(sql, t.after || "", t.ordered, t.hash, t.unordered, t.rows, t.cols));
+    ul.innerHTML = ""; const li = document.createElement("li"); li.className = r.ok ? "pass" : "fail"; li.textContent = (r.ok ? "✓ " : "✗ ") + r.msg; ul.appendChild(li);
+    if (r.ok) passedTasks.add(id);
+    store.set("tasksPassed", [...passedTasks]);
+    store.set("practiceBest", passedTasks.size);
+    if (Object.keys(TASKS).every(k => passedTasks.has(k))) mark("practice");
+    buildLink();
+  });
+}
+
+// ---------------- Database readiness check ----------------
+const RCQ = [{"q": "Which clause filters groups after aggregation?", "opts": ["WHERE", "HAVING", "GROUP BY", "ORDER BY"], "a": 1}, {"q": "You need every customer and their order count, including customers with no orders. Which join do you use, starting FROM customers?", "opts": ["INNER JOIN orders", "LEFT JOIN orders", "A join is not needed", "JOIN orders WHERE order_id IS NOT NULL"], "a": 1}, {"q": "In the order_items table, what is book_id?", "opts": ["The primary key of order_items by itself", "A foreign key that references books", "A copy of the book title", "An aggregate column"], "a": 1}, {"q": "An orders table stores the customer's address on every order row. What is the main problem?", "opts": ["Queries will run too fast", "The same fact is repeated, so updates can leave conflicting addresses", "Orders cannot have a primary key", "Addresses cannot be stored as text"], "a": 1}, {"q": "There are 5 customers, and one has a NULL email. What does SELECT COUNT(*), COUNT(email) FROM customers return?", "opts": ["5 and 5", "4 and 4", "5 and 4", "An error"], "a": 2}, {"q": "What does this statement do?", "code": "UPDATE books SET price = 0;", "opts": ["Nothing, because there is no WHERE", "Sets the price of every book to 0", "Sets the price of the first book to 0", "Deletes the price column"], "a": 1}, {"q": "Which books match WHERE price BETWEEN 9.99 AND 12.50?", "code": "SQL Intro 9.99 | Python Basics 12.50 | Python Projects 29.50", "opts": ["Only SQL Intro", "Only Python Basics", "SQL Intro and Python Basics", "None of them"], "a": 2}, {"q": "How is a many-to-many relationship between orders and books stored?", "opts": ["A list of book titles in one orders column", "A junction table holding order_id and book_id", "A foreign key in both tables pointing at each other", "It cannot be stored in a relational database"], "a": 1}, {"q": "What is wrong with this query?", "code": "SELECT category, title, COUNT(*)\nFROM books\nGROUP BY category;", "opts": ["Nothing", "title is neither grouped nor aggregated", "COUNT(*) needs a column name", "GROUP BY must come before FROM"], "a": 1}, {"q": "Which query returns the most expensive book first?", "opts": ["SELECT title FROM books ORDER BY price", "SELECT title FROM books ORDER BY price DESC", "SELECT MAX(title) FROM books", "SELECT title FROM books GROUP BY price DESC"], "a": 1}];
+const RCB = {"b1": {"ordered": false, "hash": "947a3ae26184bd7441ef57e9dab623a5deb584a27a08c83a79d42591b1b02f5c", "unordered": "947a3ae26184bd7441ef57e9dab623a5deb584a27a08c83a79d42591b1b02f5c", "rows": 5, "cols": 2, "after": ""}, "b2": {"ordered": false, "hash": "e765f27475d58474f3bde124779a70ee47d73c98a95d5f38ffa9753e4614ada6", "unordered": "e765f27475d58474f3bde124779a70ee47d73c98a95d5f38ffa9753e4614ada6", "rows": 4, "cols": 2, "after": ""}};
+const RC_MINUTES = 30;
+const rcAns = store.get("rcAns") || {};
+const rcEditors = {};
+let rcTick = null;
+for (const id of Object.keys(RCB)) {
+  const ide = $("#rc" + id.toUpperCase()), ta = ide.querySelector("textarea");
+  if (store.get("rc_" + id)) ta.value = store.get("rc_" + id);
+  fit(ta); ta.addEventListener("input", () => { fit(ta); store.set("rc_" + id, ta.value); });
+  const bar = document.createElement("div"); bar.className = "bar";
+  const runB = document.createElement("button"); runB.textContent = "Run"; bar.appendChild(runB);
+  const out = document.createElement("div"); out.className = "sqlout"; ide.append(bar, out);
+  const run = async () => { runB.disabled = true; out.textContent = "Running..."; renderSQL(out, await runSQL(ta.value)); runB.disabled = false; };
+  runB.addEventListener("click", run); keys(ta, run);
+  rcEditors[id] = {ta, runB};
+}
+function renderQuestions(results) {
+  const ol = $("#rcQuestions"); ol.innerHTML = "";
+  RCQ.forEach((item, i) => {
+    const li = document.createElement("li");
+    const p = document.createElement("p"); p.textContent = item.q; li.appendChild(p);
+    if (item.code) { const pre = document.createElement("pre"); const c = document.createElement("code"); c.textContent = item.code; pre.appendChild(c); li.appendChild(pre); }
+    const fs = document.createElement("fieldset");
+    item.opts.forEach((o, j) => {
+      const lab = document.createElement("label"); const inp = document.createElement("input");
+      inp.type = "radio"; inp.name = "rc" + i; inp.value = j; inp.setAttribute("aria-label", "Question " + (i + 1) + ": " + o);
+      if (rcAns[i] === j) inp.checked = true; if (results) inp.disabled = true;
+      inp.addEventListener("change", () => { rcAns[i] = j; store.set("rcAns", rcAns); });
+      const c = document.createElement("span"); c.textContent = o; lab.append(inp, c); fs.appendChild(lab);
+    });
+    li.appendChild(fs);
+    if (results) { const r = document.createElement("p"); const ok = rcAns[i] === item.a; r.className = "res " + (ok ? "ok" : "no"); r.textContent = ok ? "✓ Correct" : "✗ Correct answer: " + item.opts[item.a]; li.appendChild(r); }
+    ol.appendChild(li);
+  });
+}
+function tick() {
+  const start = store.get("rcStart"); if (!start) return;
+  const left = Math.max(0, RC_MINUTES * 60 - Math.floor((Date.now() - start) / 1000));
+  $("#rcTimer").textContent = "Time remaining: " + Math.floor(left / 60) + ":" + String(left % 60).padStart(2, "0");
+  if (left === 0) { clearInterval(rcTick); submitCheck(true); }
+}
+function openCheck() {
+  $("#rcIntro").hidden = true; $("#rcBody").hidden = false;
+  $("#rcAI").checked = !!store.get("rcAIdraft");
+  renderQuestions(false); tick(); rcTick = setInterval(tick, 1000);
+}
+let rcSubmitting = false;
+async function submitCheck(timeUp) {
+  if (rcSubmitting || store.get("rcScore") !== null) return;
+  rcSubmitting = true; $("#rcSubmit").disabled = true; $("#rcSubmit").textContent = "Scoring...";
+  clearInterval(rcTick);
+  const py = await ready;
+  const build = [];
+  for (const [id, t] of Object.entries(RCB)) {
+    const r = JSON.parse(py.globals.get("check_json")(rcEditors[id].ta.value, t.after || "", t.ordered, t.hash, t.unordered, t.rows, t.cols));
+    build.push({ok: r.ok, text: "Query " + id.slice(1) + ": " + r.msg});
+  }
+  const correct = RCQ.filter((item, i) => rcAns[i] === item.a).length;
+  const passed = build.filter(b => b.ok).length;
+  const score = correct * 7 + passed * 15;
+  store.set("rcScore", score); store.set("rcAI", $("#rcAI").checked); store.set("rcBuild", build);
+  mark("readiness"); showResult(timeUp);
+}
+function showResult(timeUp) {
+  const score = store.get("rcScore"), build = store.get("rcBuild") || [];
+  $("#rcIntro").hidden = true; $("#rcBody").hidden = false;
+  $("#rcSubmit").parentElement.hidden = true; $("#rcTimer").hidden = true;
+  for (const e of Object.values(rcEditors)) { e.ta.readOnly = true; e.runB.disabled = true; }
+  $("#rcAI").disabled = true; $("#rcAI").checked = !!store.get("rcAI");
+  renderQuestions(true);
+  const correct = RCQ.filter((item, i) => rcAns[i] === item.a).length, passed = build.filter(b => b.ok).length;
+  const box = $("#rcResult"); box.hidden = false; box.innerHTML = "";
+  const big = document.createElement("p"); big.className = "score"; big.textContent = score + " / 100"; box.appendChild(big);
+  const p = document.createElement("p");
+  p.textContent = (timeUp ? "Time ran out, so your check was submitted automatically. " : "") + "Questions: " + correct + " of 10 correct (" + correct * 7 + " points). Queries: " + passed + " of 2 correct (" + passed * 15 + " points). " +
+    (score >= 70 ? "You are ready for BUAN 6320." : "Your lab managers will help you choose what to practice before BUAN 6320 starts. Review the questions you missed above.");
+  box.appendChild(p);
+  const ul = document.createElement("ul"); ul.className = "results";
+  for (const it of build) { const li = document.createElement("li"); li.className = it.ok ? "pass" : "fail"; li.textContent = (it.ok ? "✓ " : "✗ ") + it.text; ul.appendChild(li); }
+  box.appendChild(ul);
+  const p2 = document.createElement("p"); p2.textContent = "Your score is included when you click Submit my progress below."; box.appendChild(p2);
+  buildLink();
+}
+$("#rcStart").addEventListener("click", () => { if (!store.get("rcStart")) store.set("rcStart", Date.now()); openCheck(); });
+$("#rcAI").addEventListener("change", () => store.set("rcAIdraft", $("#rcAI").checked));
+$("#rcSubmit").addEventListener("click", () => submitCheck(false));
+function initCheck() {
+  if (store.get("rcScore") !== null) showResult(false);
+  else if (store.get("rcStart")) openCheck();
+}
+
+$$("[data-hint]").forEach(b => b.addEventListener("click", () => {
+  const n = +b.dataset.hint; $("#hint" + n).classList.add("show"); b.disabled = true;
+  const next = document.querySelector('[data-hint="' + (n + 1) + '"]'); if (next) next.disabled = false;
+}));
+
+for (const id of ["r1", "r2"]) {
+  const t = $("#" + id); t.value = store.get(id) || "";
+  t.addEventListener("input", () => { store.set(id, t.value); if ($("#r1").value.trim() && $("#r2").value.trim()) mark("reflect"); });
+}
+$("#copy").addEventListener("click", async () => {
+  const text = "Week 6 reflection\n1. " + $("#r1").value + "\n2. " + $("#r2").value;
+  try { await navigator.clipboard.writeText(text); $("#copied").textContent = "Copied!"; }
+  catch (e) { $("#copied").textContent = "Copy was blocked. Select the text and copy it manually."; }
+});
+
+const FORM = "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=HR0ojU2c90uxbgMtFd6fbM9nfVf34TpHgl6pKq55rp1UOFRJMEEwRDFUNkRBN1o4SDVCU1g0VDdXUC4u";
+const F = {name: "r2c0208ff4dd943f688e7c47df23cfa7a", email: "r010a9dd649704948bb6a24a94fd40f4b", week: "r879ad0bfabbf4e7893a2ead1008854e4",
+  milestones: "r661ec63aa6f7427e97b1f409235c37d4", checkpoints: "r11275b25ec40449fae497419ae9f5924", practice: "rf9c32ca2f9844b9889a973868008f260",
+  score: "rabb8296b553f49d78ee761a46b0ca71b", r1: "rb9d14dd306224e73b7f465e89ed5f485", r2: "r3eb92c6e1f7243cc87abf9983656f5c1"};
+const WEEK = "Week 6";
+const LABELS = {cp1: "Checkpoint 1", cp2: "Checkpoint 2", cp3: "Checkpoint 3", practice: "Practice task", extension: "Extension", readiness: "Readiness check", reflect: "Reflection"};
+const clip = (s, n) => s.length > n ? s.slice(0, n) + "..." : s;
+function buildLink() {
+  const doneList = MILESTONES.filter(m => done.has(m));
+  const milestones = doneList.length + " of " + MILESTONES.length + (doneList.length ? ": " + doneList.map(m => LABELS[m]).join(", ") : "");
+  const checkpoints = $$(".mcq").map((q, i) => {
+    const pick = store.get(q.dataset.mcq);
+    if (pick === null) return "CP" + (i + 1) + ": not answered";
+    const text = q.querySelectorAll(".opts button")[pick].textContent;
+    return "CP" + (i + 1) + ": " + text + (pick === +q.dataset.answer ? " (correct)" : " (incorrect)");
+  }).join("; ");
+  const best = store.get("practiceBest") || 0;
+  const practice = done.has("practice") ? "Passed all tests" : best > 0 ? "Passed some tests" : "Not attempted";
+  const rcAI = store.get("rcAI");
+  const milestonesOut = milestones + (rcAI === null ? "" : "; AI used on readiness check: " + (rcAI ? "yes" : "no"));
+  const rcScore = store.get("rcScore");
+  const vals = {score: rcScore === null ? "" : String(rcScore), name: $("#sname").value.trim(), email: $("#semail").value.trim(), week: '"' + WEEK + '"', milestones: milestonesOut, checkpoints,
+    practice: '"' + practice + '"', r1: clip($("#r1").value.trim(), 900), r2: clip($("#r2").value.trim(), 900)};
+  const q = Object.entries(vals).filter(([k, v]) => v).map(([k, v]) => F[k] + "=" + encodeURIComponent(v)).join("&");
+  const link = $("#submitLink");
+  link.href = FORM + "&" + q;
+  const ready = vals.name && vals.email;
+  link.classList.toggle("off", !ready);
+  link.setAttribute("aria-disabled", String(!ready));
+  $("#summary").textContent = (ready ? "" : "Add your name and email to enable the button. ") + "Will submit: " + milestones + ". Practice task: " + practice + "." + (rcScore === null ? " Readiness check: not taken yet." : " Readiness check score: " + rcScore + ".");
+}
+for (const id of ["sname", "semail"]) {
+  const t = $("#" + id); t.value = store.get(id) || "";
+  t.addEventListener("input", () => { store.set(id, t.value); buildLink(); });
+}
+$("#submitLink").addEventListener("click", buildLink);
+for (const id of ["r1", "r2"]) $("#" + id).addEventListener("input", buildLink);
+
+paint();
+buildLink();
+initCheck();
+}
+</script>
+</body>
+</html>

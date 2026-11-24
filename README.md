@@ -9,6 +9,8 @@ Free 6-week online prep for admitted MS ITM students: Python, OOP and SQL founda
 | `index.html` | Home page: week list and Week 0 setup |
 | `week01.html` | Week 1: Python Basics |
 | `week02.html` | Week 2: Functions and Strings |
+| `week03.html` | Week 3: Collections, Errors and Files |
+| `week04.html` | Week 4: Objects and Classes, plus the Python readiness check |
 | `notebooks/` | Optional Jupyter versions for students who prefer notebooks |
 | `.nojekyll` | Tells GitHub Pages to serve files as-is |
 

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MS ITM Readiness Bootcamp</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0c1a13);--panel:light-dark(#f3f6f2,#13261c);--ink:light-dark(#14211a,#e8efe9);--muted:light-dark(#4d5c53,#a9bcae);--band:light-dark(#154734,#0f3324);--orange:#e87500;--line:light-dark(#d7e0d9,#24402f);--ok:light-dark(#11713f,#5fd391)}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16.5px/1.6 Inter,system-ui,sans-serif}
+h1,h2{font-family:Lexend,Inter,sans-serif;line-height:1.1;margin:0 0 .5em}
+h1{font-size:clamp(32px,5vw,48px);font-weight:600}h2{font-size:26px;font-weight:600}
+header{background:var(--band);color:#fff;padding:clamp(32px,5vw,64px) max(5vw,16px);border-bottom:8px solid var(--orange)}
+header .wrap,main{max-width:860px;margin:auto}
+header p{color:#d6e6db;max-width:60ch}
+.kicker{color:#ffc58f;font-weight:600;margin:0 0 8px}
+main{padding:32px max(5vw,16px) 64px}
+section{margin-bottom:40px}
+.weeks{display:grid;gap:12px}
+.week{display:grid;grid-template-columns:90px minmax(0,1fr) auto;gap:16px;align-items:center;padding:16px 18px;border:1px solid var(--line);border-radius:10px;background:var(--panel);text-decoration:none;color:var(--ink)}
+a.week:hover,a.week:focus-visible{border-color:var(--orange);outline:none;box-shadow:0 0 0 2px var(--orange)}
+.week b{font-family:Lexend,sans-serif;font-size:15px;color:var(--muted)}
+.week strong{display:block;font-size:18px}
+.week span.d{color:var(--muted);font-size:15px}
+.tag{font-size:13px;font-weight:600;padding:4px 10px;border-radius:99px;white-space:nowrap}
+.open{background:var(--orange);color:#1a0d00}.soon{border:1px solid var(--line);color:var(--muted)}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+a{color:light-dark(#a85300,#ffab5c)}
+.note{background:var(--panel);border-left:4px solid var(--orange);padding:14px 18px;border-radius:6px}
+@media(max-width:600px){.week{grid-template-columns:1fr}.tag{justify-self:start}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <p class="kicker">Naveen Jindal School of Management, UT Dallas</p>
+  <h1>MS ITM Readiness Bootcamp</h1>
+  <p>A free 6-week online head start for admitted MS ITM students. Build the Python, object-oriented programming and SQL foundations you need for MIS 6382 and BUAN 6320, at your own pace, with lab managers ready to help.</p>
+</div></header>
+<main>
+<section>
+  <h2>Weekly lessons</h2>
+  <div class="weeks">
+    <a class="week" href="#setup"><b>Week 0</b><div><strong>Setup</strong><span class="d">Install your tools and run your first program and query</span></div><span class="tag open">Start here</span></a>
+    <a class="week" href="week01.html"><b>Week 1</b><div><strong>Python Basics</strong><span class="d">Variables, expressions, input, decisions and loops</span></div><span class="tag open">Open</span></a>
+    <a class="week" href="week02.html"><b>Week 2</b><div><strong>Functions and Strings</strong><span class="d">Reusable functions, return values, slicing and f-strings</span></div><span class="tag open">Open</span></a>
+    <div class="week"><b>Week 3</b><div><strong>Collections, Errors and Files</strong><span class="d">Lists, dictionaries, try/except and CSV files</span></div><span class="tag soon">Coming soon</span></div>
+    <div class="week"><b>Week 4</b><div><strong>Objects and Classes</strong><span class="d">OOP preview and Python readiness check</span></div><span class="tag soon">Coming soon</span></div>
+    <div class="week"><b>Week 5</b><div><strong>SQL Queries</strong><span class="d">SELECT, filtering and joins</span></div><span class="tag soon">Coming soon</span></div>
+    <div class="week"><b>Week 6</b><div><strong>SQL Design</strong><span class="d">Aggregation, data changes, ER modeling and database readiness check</span></div><span class="tag soon">Coming soon</span></div>
+  </div>
+</section>
+
+<section id="setup">
+  <h2>Week 0: Setup</h2>
+  <p>The weekly lessons run in your browser, so you can start Week 1 right away. Set up these tools before your first term, because your MIS 6382 and BUAN 6320 instructors use them.</p>
+  <table><thead><tr><th>Tool</th><th>Why</th></tr></thead><tbody>
+  <tr><td><a href="https://www.anaconda.com/download">Anaconda</a> (Python and Jupyter) or <a href="https://colab.research.google.com/">Google Colab</a></td><td>Python environment used in MIS 6382</td></tr>
+  <tr><td><a href="https://code.visualstudio.com/">Visual Studio Code</a></td><td>Code editor used later in MIS 6382</td></tr>
+  <tr><td><a href="https://education.github.com/">GitHub Education</a></td><td>Free GitHub Copilot for students</td></tr>
+  <tr><td><a href="https://apex.oracle.com/en/learn/getting-started/">Oracle APEX</a> and <a href="https://dev.mysql.com/downloads/">MySQL Workbench</a></td><td>SQL tools used in BUAN 6320</td></tr>
+  <tr><td><a href="https://www.mongodb.com/cloud/atlas/register">MongoDB Atlas</a></td><td>NoSQL database used later in BUAN 6320</td></tr>
+  </tbody></table>
+  <p>Prefer Jupyter? Download the <a href="notebooks/week00_setup.ipynb">Week 0 setup notebook</a> and the <a href="notebooks/week01_python_basics.ipynb">Week 1 notebook</a>.</p>
+</section>
+
+<section>
+  <h2>How it works</h2>
+  <div class="note">
+    <p>Work through one lesson per week. Answer each checkpoint on your own, complete the practice task, then click <strong>Submit my progress</strong> at the bottom of the page. You may use AI after your own attempt; readiness checks are taken without it.</p>
+    <p>Questions? Post in the bootcamp Teams channel or join lab manager question hours.</p>
+  </div>
+</section>
+</main>
+</body>
+</html>

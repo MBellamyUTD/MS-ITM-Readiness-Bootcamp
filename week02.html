@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 2: Functions and Strings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* VOICE: friendly coach, clear and encouraging, never cute
+   IDEA: a lab workbook from the Comet Campus Bookstore, each section a page you work through
+   PICTURE: live code editors and the bookstore receipt the students are building
+   COLOUR and TYPE: UTD green field, orange for the one thing to do next; Lexend titles, Inter body, JetBrains Mono code
+   LAYOUT: green band header with progress, single reading column, sticky section links above 900px */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#0c1a13);--panel:light-dark(#f3f6f2,#13261c);--ink:light-dark(#14211a,#e8efe9);--muted:light-dark(#4d5c53,#a9bcae);
+--green:#154734;--band:light-dark(#154734,#0f3324);--orange:#e87500;--orange-ink:light-dark(#a85300,#ffab5c);
+--line:light-dark(#d7e0d9,#24402f);--code:light-dark(#0f1d16,#07110c);--codeink:#e6f0e8;--ok:light-dark(#11713f,#5fd391);--bad:light-dark(#b42318,#ff8a80)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16.5px/1.6 Inter,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Lexend,Inter,sans-serif;line-height:1.1;text-wrap:balance;margin:0 0 .5em}
+h1{font-size:clamp(32px,5vw,48px);font-weight:600}h2{font-size:28px;font-weight:600;margin-top:.2em}h3{font-size:19px;font-weight:600}
+a{color:var(--orange-ink)}
+code{font-family:"JetBrains Mono",monospace;font-size:.92em;background:var(--panel);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+html{scroll-padding-top:72px}
+.band{padding:clamp(28px,4vw,56px) max(5vw,16px)}
+header.band{background:var(--band);color:#fff}
+.hwrap{max-width:1040px;margin:auto;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:40px;align-items:center}
+.kicker{font-weight:600;color:#ffc58f;margin:0 0 8px}
+header p{color:#d6e6db;max-width:56ch}
+.meter{margin-top:22px;max-width:420px}
+.meter .track{height:12px;background:rgba(255,255,255,.18);border-radius:99px;overflow:hidden}
+.meter .fill{height:100%;width:0;background:var(--orange);border-radius:99px;transition:width .5s}
+.meter small{display:block;margin-top:6px;color:#d6e6db}
+#status{display:inline-block;margin-top:14px;font-size:14px;padding:4px 12px;border-radius:99px;background:rgba(255,255,255,.14)}
+.receipt{width:100%;max-width:340px;justify-self:end}
+nav.scroll{display:flex;gap:6px;padding:10px max(5vw,16px);border-bottom:1px solid var(--line);background:var(--bg);white-space:nowrap}
+nav a{flex:none;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500;padding:8px 12px;border-radius:8px}
+nav a:hover,nav a:focus-visible{background:var(--panel)}
+nav a.done::after{content:" \2713";color:var(--ok)}
+@media(min-width:900px){nav.scroll{position:sticky;top:0;z-index:5}}
+main{max-width:780px;margin:auto;padding:8px max(5vw,16px) 64px}
+section{padding:36px 0;border-bottom:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:15px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{font-weight:600}
+.note{background:var(--panel);border-left:4px solid var(--orange);padding:14px 18px;border-radius:6px;margin:16px 0}
+.note p{margin:.3em 0}
+.ide{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:16px 0;background:var(--code)}
+.ide textarea{display:block;width:100%;border:0;resize:vertical;background:var(--code);color:var(--codeink);font:15px/1.55 "JetBrains Mono",monospace;padding:14px 16px;tab-size:4;outline:none;min-height:90px}
+.ide textarea:focus-visible{box-shadow:inset 0 0 0 2px var(--orange)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 10px;background:light-dark(#e7eee9,#10241a);border-top:1px solid var(--line)}
+.bar label{font-size:14px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.bar select,.stdin{font:15px Inter,sans-serif;padding:8px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-height:40px}
+.stdin{font-family:"JetBrains Mono",monospace;width:100%;min-height:64px;resize:vertical}
+.stdwrap{padding:8px 10px;background:light-dark(#e7eee9,#10241a);border-top:1px solid var(--line)}
+.stdwrap span{font-size:13px;color:var(--muted)}
+button{font:600 15px Inter,sans-serif;min-height:44px;padding:0 16px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+button.go{background:var(--orange);border-color:var(--orange);color:#1a0d00}
+button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+button:disabled{opacity:.5;cursor:default}
+.out{margin:0;padding:12px 16px;min-height:44px;font:14px/1.5 "JetBrains Mono",monospace;white-space:pre-wrap;color:var(--codeink);background:#06100b;border-top:1px solid #1d3527}
+.out:empty::before{content:"Output appears here";color:#6f8a78}
+.out .err{color:#ff9d8f}
+.mcq{background:var(--panel);border-radius:10px;padding:18px;margin:16px 0}
+.opts{display:grid;gap:8px;margin:12px 0}
+.opts button{text-align:left;font-family:"JetBrains Mono",monospace;font-weight:500}
+.opts button.right{border-color:var(--ok);box-shadow:inset 0 0 0 2px var(--ok)}
+.opts button.wrong{border-color:var(--bad);box-shadow:inset 0 0 0 2px var(--bad)}
+.why{display:none;margin:8px 0 0}.why.show{display:block}
+.results{list-style:none;padding:0;margin:12px 0}
+.results li{padding:10px 14px;border-radius:8px;margin:6px 0;background:var(--panel)}
+.results .pass{border-left:4px solid var(--ok)}.results .fail{border-left:4px solid var(--bad)}
+.hints{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.hint{display:none;background:var(--panel);padding:12px 16px;border-radius:8px;margin:8px 0}.hint.show{display:block}
+.reflect textarea{width:100%;min-height:90px;font:16px Inter,sans-serif;padding:12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);margin:6px 0 16px}
+.badge{display:none;align-items:center;gap:10px;font-weight:600;color:var(--ok);margin-top:10px}.badge.show{display:flex}
+.who{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:12px 0}
+.who label{display:grid;gap:4px;font-weight:600;font-size:15px}
+.who input{font:16px Inter,sans-serif;min-height:44px;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+a.submit{display:inline-flex;align-items:center;min-height:48px;padding:0 22px;border-radius:8px;background:var(--orange);color:#1a0d00;font-weight:600;text-decoration:none}
+a.submit:focus-visible{outline:3px solid var(--orange);outline-offset:3px}
+a.submit.off{opacity:.5;pointer-events:none}
+.small{font-size:14px;color:var(--muted)}
+footer{max-width:780px;margin:auto;padding:0 max(5vw,16px) 48px;color:var(--muted);font-size:14px}
+@media(max-width:700px){.hwrap{grid-template-columns:1fr}.receipt{justify-self:start;max-width:260px}}
+@media(prefers-reduced-motion:reduce){.meter .fill{transition:none}}
+@media(max-width:600px){table{font-size:13px}}
+</style>
+</head>
+<body>
+<header class="band">
+  <div class="hwrap">
+    <div>
+      <p class="kicker">MS ITM Readiness Bootcamp</p>
+      <h1>Week 2: Functions and Strings</h1>
+      <p>Turn last week's calculator into reusable functions and print clean receipts for the Comet Campus Bookstore. Every code box runs real Python in your browser.</p>
+      <div class="meter" aria-live="polite"><div class="track"><div class="fill" id="fill"></div></div><small id="ptext">0 of 6 milestones complete</small></div>
+      <span id="status">Loading Python...</span>
+    </div>
+    <svg class="receipt" viewBox="0 0 300 330" role="img" aria-label="A bookstore receipt showing a 10 percent discount">
+      <defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#eef3ef"/></linearGradient></defs>
+      <rect x="42" y="26" width="226" height="292" rx="6" fill="#0a2a1d" opacity=".45"/>
+      <path d="M30 14h226v280l-14 10-14-10-14 10-14-10-14 10-14-10-14 10-14-10-14 10-14-10-14 10-14-10-14 10-14-10-14 10-14-10z" fill="url(#pg)"/>
+      <text x="143" y="48" text-anchor="middle" font-family="Lexend" font-weight="600" font-size="17" fill="#154734">Comet Campus Bookstore</text>
+      <line x1="50" y1="64" x2="236" y2="64" stroke="#154734" stroke-dasharray="4 4"/>
+      <g font-family="JetBrains Mono" font-size="14" fill="#14211a">
+        <text x="50" y="94">format_line(...)</text>
+        <text x="50" y="124">Subtotal</text><text x="236" y="124" text-anchor="end">62.50</text>
+        <text x="50" y="154" fill="#a85300">Discount 10%</text><text x="236" y="154" text-anchor="end" fill="#a85300">-6.25</text>
+      </g>
+      <line x1="50" y1="174" x2="236" y2="174" stroke="#154734"/>
+      <text x="50" y="208" font-family="Lexend" font-weight="600" font-size="20" fill="#154734">Total</text>
+      <text x="236" y="208" text-anchor="end" font-family="Lexend" font-weight="600" font-size="20" fill="#154734">$56.25</text>
+      <rect x="50" y="236" width="186" height="34" rx="17" fill="#e87500"/>
+      <text x="143" y="258" text-anchor="middle" font-family="Inter" font-weight="600" font-size="14" fill="#1a0d00">return total</text>
+    </svg>
+  </div>
+</header>
+
+<nav class="scroll" aria-label="Sections">
+  <a href="index.html">Home</a><a href="#start">Start</a><a href="#functions" data-sec="functions">Functions</a><a href="#return" data-sec="return">Return</a><a href="#strings" data-sec="strings">Strings</a><a href="#fstrings">f-strings</a><a href="#practice" data-sec="practice">Practice</a><a href="#extension" data-sec="extension">Extension</a><a href="#reflect" data-sec="reflect">Reflect</a><a href="#submit">Submit</a>
+</nav>
+
+<main>
+<section id="start">
+  <h2>Before you start</h2>
+  <p><strong>This week you will:</strong> package code into reusable functions, return values instead of just printing them, slice and transform text, and format output cleanly with f-strings. This prepares you for MIS 6382 Modules 2 and 3 (functions and strings).</p>
+  <p><strong>Watch first:</strong> <a href="https://www.py4e.com/lessons">Python for Everybody</a>, Chapter 4 (Functions) and Chapter 6 (Strings).</p>
+  <div class="note">
+    <p><strong>How to use AI this week</strong></p>
+    <p>Answer every checkpoint and attempt the practice task on your own first. After that, you may ask an AI tool to review your code, then note what it changed in the reflection. Readiness checks are taken without AI.</p>
+  </div>
+  <p>Tip: press <code>Ctrl + Enter</code> (or <code>Cmd + Enter</code>) inside any code box to run it.</p>
+</section>
+
+<section id="functions">
+  <h2>1. Defining functions</h2>
+  <p>A function is a named block of code you can run again and again. You <strong>define</strong> it once with <code>def</code>, then <strong>call</strong> it by name. Values you pass in are <strong>parameters</strong>; the value it hands back is its <strong>return value</strong>.</p>
+  <div class="ide" data-run><textarea spellcheck="false" aria-label="Code editor">def subtotal(price, quantity):
+    return price * quantity
+
+print(subtotal(12.50, 5))
+print(subtotal(9.99, 3))
+
+order_total = subtotal(4.00, 10) + subtotal(2.50, 2)
+print("Combined:", order_total)</textarea></div>
+  <p>Functions can call other functions. This is how real programs stay readable: each function does one job.</p>
+  <div class="ide" data-run><textarea spellcheck="false" aria-label="Code editor">def subtotal(price, quantity):
+    return price * quantity
+
+def with_tax(amount, rate=0.0825):      # rate has a default value
+    return round(amount * (1 + rate), 2)
+
+print(with_tax(subtotal(12.50, 5)))
+print(with_tax(100, rate=0.05))</textarea></div>
+
+  <div class="mcq" data-mcq="cp1" data-answer="0">
+    <h3>Checkpoint 1: predict before you run</h3>
+    <pre><code>def double(n):
+    n = n * 2
+    return n
+
+x = 5
+y = double(x)
+print(x, y)</code></pre>
+    <p>What does this print?</p>
+    <div class="opts"><button>5 10</button><button>10 10</button><button>5 5</button><button>An error</button></div>
+    <p class="why">Inside the function, <code>n</code> is a separate local variable. Changing it does not change <code>x</code>, so <code>x</code> stays 5 and <code>y</code> gets the returned 10.</p>
+  </div>
+</section>
+
+<section id="return">
+  <h2>2. Return versus print</h2>
+  <p><code>print</code> shows a value on the screen. <code>return</code> hands the value back so other code can use it. A function with no <code>return</code> hands back <code>None</code>.</p>
+  <div class="ide" data-run><textarea spellcheck="false" aria-label="Code editor">def show_total(amount):
+    print("Total:", amount)       # displays, but gives nothing back
+
+def get_total(amount):
+    return amount                 # gives the value back
+
+a = show_total(50)
+b = get_total(50)
+print("a is", a)
+print("b is", b)</textarea></div>
+
+  <div class="mcq" data-mcq="cp2" data-answer="0">
+    <h3>Checkpoint 2: predict before you run</h3>
+    <pre><code>def greet(name):
+    print("Hi", name)
+
+result = greet("Ana")
+print(result)</code></pre>
+    <p>What does this print?</p>
+    <div class="opts"><button>Hi Ana, then None</button><button>Hi Ana, then Hi Ana</button><button>Just None</button><button>Just Hi Ana</button></div>
+    <p class="why"><code>greet</code> prints "Hi Ana" but has no <code>return</code>, so <code>result</code> is <code>None</code>. This is the most common bug in the practice task below.</p>
+  </div>
+</section>
+
+<section id="strings">
+  <h2>3. Working with strings</h2>
+  <p>A string is a sequence of characters. Each character has a position (index) starting at 0. Negative indexes count from the end. A <strong>slice</strong> <code>s[start:stop]</code> takes characters from <code>start</code> up to, but not including, <code>stop</code>.</p>
+  <table><thead><tr><th>Method</th><th>Example</th><th>Result</th></tr></thead><tbody>
+  <tr><td><code>upper()</code></td><td><code>"sql".upper()</code></td><td><code>"SQL"</code></td></tr>
+  <tr><td><code>strip()</code></td><td><code>"  hi  ".strip()</code></td><td><code>"hi"</code></td></tr>
+  <tr><td><code>replace()</code></td><td><code>"a-b".replace("-", " ")</code></td><td><code>"a b"</code></td></tr>
+  <tr><td><code>split()</code></td><td><code>"a,b".split(",")</code></td><td><code>["a", "b"]</code></td></tr>
+  <tr><td><code>len()</code></td><td><code>len("Python")</code></td><td><code>6</code></td></tr></tbody></table>
+  <div class="ide" data-run><textarea spellcheck="false" aria-label="Code editor">title = "Python Basics"
+
+print(title[0])          # first character
+print(title[-1])         # last character
+print(title[0:6])        # characters 0 to 5
+print(title.upper())
+print(len(title))
+print(title.split(" "))
+
+raw = "   isbn-978-1-23   "
+print(raw.strip().upper().replace("-", ""))</textarea></div>
+
+  <div class="mcq" data-mcq="cp3" data-answer="0">
+    <h3>Checkpoint 3: predict before you run</h3>
+    <pre><code>title = "Python Basics"
+print(title[:3], title[-3:])</code></pre>
+    <p>What does this print?</p>
+    <div class="opts"><button>Pyt ics</button><button>Pyth sics</button><button>Pyt cs</button><button>An error</button></div>
+    <p class="why"><code>[:3]</code> takes positions 0, 1 and 2 ("Pyt"). <code>[-3:]</code> starts three from the end and runs to the end ("ics").</p>
+  </div>
+</section>
+
+<section id="fstrings">
+  <h2>4. Formatting with f-strings</h2>
+  <p>Put an <code>f</code> before the quotes and place any expression inside <code>{ }</code>. Add a format code after a colon: <code>:.2f</code> shows two decimals, <code>:&gt;8</code> right-aligns in 8 spaces.</p>
+  <div class="ide" data-run><textarea spellcheck="false" aria-label="Code editor">title = "Python Basics"
+price = 12.5
+quantity = 5
+
+print(f"{title} x{quantity}: ${price * quantity:.2f}")
+print(f"{'Item':<15}{'Total':>8}")
+print(f"{title:<15}{price * quantity:>8.2f}")</textarea></div>
+  <div class="note"><p><strong>Try it:</strong> change <code>:.2f</code> to <code>:.0f</code>, then remove the <code>f</code> before the quotes. What happens each time?</p></div>
+</section>
+
+<section id="practice">
+  <h2>Practice task: receipt functions</h2>
+  <p>Turn last week's price calculator into reusable functions for the Comet Campus Bookstore. Write two functions:</p>
+  <ul>
+    <li><code>calc_total(price, quantity)</code> <strong>returns</strong> the total after the 10% discount for subtotals over $50, rounded to 2 decimals</li>
+    <li><code>format_line(title, price, quantity)</code> <strong>returns</strong> a string like <code>Python Basics x5: $62.50</code> (the subtotal before discount, always with 2 decimals)</li>
+  </ul>
+  <p>Use <strong>Run</strong> to try your own calls, and <strong>Check my functions</strong> when you think they work.</p>
+  <div class="ide" id="practiceIde"><textarea spellcheck="false" aria-label="Practice code editor">def calc_total(price, quantity):
+    # your code here
+    pass
+
+
+def format_line(title, price, quantity):
+    # your code here
+    pass
+
+
+# Try your functions:
+print(calc_total(12.50, 5))
+print(format_line("Python Basics", 12.50, 5))
+</textarea>
+    <div class="bar">
+      <button class="go" id="prun">Run</button><button id="pcheck">Check my functions</button><button id="preset">Reset</button>
+    </div>
+    <pre class="out" id="pout" aria-live="polite"></pre>
+  </div>
+  <ul class="results" id="presults" aria-live="polite"></ul>
+  <div class="badge" id="pbadge"><svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="13" fill="currentColor"/><path d="M8 14.5l4 4 8-9" stroke="#fff" stroke-width="3" fill="none"/></svg>Receipt functions complete. Nice work!</div>
+  <p>Stuck? Unlock hints one at a time.</p>
+  <div class="hints"><button data-hint="1">Hint 1</button><button data-hint="2" disabled>Hint 2</button><button data-hint="3" disabled>Hint 3</button></div>
+  <div class="hint" id="hint1">Reuse your Week 1 logic inside <code>calc_total</code>, but end with <code>return round(subtotal - discount, 2)</code> instead of printing.</div>
+  <div class="hint" id="hint2">If the checker says your function returned <code>None</code>, you printed instead of returning. Review Checkpoint 2.</div>
+  <div class="hint" id="hint3"><code>format_line</code> can be one line: <code>return f"{title} x{quantity}: ${price * quantity:.2f}"</code></div>
+</section>
+
+<section id="extension">
+  <h2>Optional extension: safe input</h2>
+  <p>Cashiers make typos. Write <code>safe_total(price_text, quantity_text)</code> that takes the raw text a cashier typed, strips spaces, and returns the total using your <code>calc_total</code>. If the price is negative or the quantity is less than 1, return the string <code>"Invalid order"</code> instead.</p>
+  <p><em>Hint:</em> convert with <code>float(price_text.strip())</code> and <code>int(quantity_text.strip())</code> before checking.</p>
+  <div class="ide" data-run data-mark="extension"><textarea spellcheck="false" aria-label="Extension code editor">def calc_total(price, quantity):
+    # paste your calc_total here
+    pass
+
+
+def safe_total(price_text, quantity_text):
+    # your code here
+    pass
+
+
+print(safe_total(" 12.50 ", "5"))     # should print 56.25
+print(safe_total("-3", "2"))          # should print Invalid order
+print(safe_total("9.99", "0"))        # should print Invalid order
+</textarea></div>
+</section>
+
+<section id="reflect">
+  <h2>Reflection</h2>
+  <div class="reflect">
+    <label for="r1"><strong>1. Which checkpoint surprised you, and why?</strong></label>
+    <textarea id="r1"></textarea>
+    <label for="r2"><strong>2. Did you use AI after your own attempt? What did it change, and why is that better? (Two sentences.)</strong></label>
+    <textarea id="r2"></textarea>
+  </div>
+  <button id="copy">Copy my answers</button> <span id="copied" role="status"></span>
+</section>
+
+<section id="submit">
+  <h2>Submit your progress</h2>
+  <p>Enter your name and email once. The button opens the Weekly Progress form with your milestones, checkpoint answers, practice result and reflections already filled in. Review them, then click Submit in the form.</p>
+  <div class="who">
+    <label for="sname">Name<input id="sname" autocomplete="name"></label>
+    <label for="semail">Email<input id="semail" type="email" autocomplete="email"></label>
+  </div>
+  <p id="summary" class="note"></p>
+  <a class="submit" id="submitLink" href="#submit" target="_blank" rel="noopener">Submit my progress</a>
+  <p class="small">Questions? Post in the Teams channel or join lab manager question hours.</p>
+</section>
+</main>
+<footer>Your progress and reflection answers are saved in this browser only. Python runs locally through Pyodide; nothing you type is sent anywhere.</footer>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<script>
+{
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const store = {get(k){try{return JSON.parse(localStorage.getItem("itmw2:"+k))}catch(e){return null}},set(k,v){try{localStorage.setItem("itmw2:"+k,JSON.stringify(v))}catch(e){}}};
+const MILESTONES = ["cp1","cp2","cp3","practice","extension","reflect"];
+const done = new Set(store.get("done") || []);
+const mark = id => {done.add(id);store.set("done",[...done]);paint();buildLink();};
+const paint = () => {
+  const n = MILESTONES.filter(m => done.has(m)).length;
+  $("#fill").style.width = (n / MILESTONES.length * 100) + "%";
+  $("#ptext").textContent = n + " of " + MILESTONES.length + " milestones complete";
+  const secOf = {cp1:"functions",cp2:"return",cp3:"strings",practice:"practice",extension:"extension",reflect:"reflect"};
+  for (const m of MILESTONES) { const a = document.querySelector('nav a[data-sec="'+secOf[m]+'"]'); if (a) a.classList.toggle("done", done.has(m)); }
+  if (done.has("practice")) $("#pbadge").classList.add("show");
+};
+
+const PRELUDE = `
+import builtins as _b
+def input(prompt=""):
+    if not _stdin:
+        raise EOFError("The program asked for more input than the input box has. Add another line.")
+    v = _stdin.pop(0)
+    print(f"{prompt}{v}")
+    return v
+`;
+const status = $("#status");
+const ready = (async () => {
+  const py = await loadPyodide();
+  status.textContent = "Python ready";
+  return py;
+})().catch(e => { status.textContent = "Python could not load. Check your connection and reload."; throw e; });
+
+async function runPy(src, {stdin = [], vars = {}} = {}) {
+  const py = await ready;
+  const ns = py.globals.get("dict")();
+  for (const [k, v] of Object.entries(vars)) ns.set(k, v);
+  ns.set("_stdin", py.toPy(stdin));
+  const out = [];
+  py.setStdout({batched: s => out.push(s)});
+  py.setStderr({batched: s => out.push(s)});
+  let err = null;
+  try {
+    await py.runPythonAsync(PRELUDE, {globals: ns});
+    await py.runPythonAsync(src, {globals: ns});
+  } catch (e) {
+    const lines = String(e.message).trim().split("\n");
+    const lineHits = lines.filter(l => l.includes('File "<exec>"'));
+    const lm = lineHits.length ? lineHits[lineHits.length - 1].match(/line (\d+)/) : null;
+    err = (lm ? "Line " + lm[1] + ": " : "") + lines[lines.length - 1];
+  }
+  return {out: out.join("\n"), err, ns};
+}
+const show = (pre, r) => {
+  pre.textContent = r.out;
+  if (r.err) { const s = document.createElement("span"); s.className = "err"; s.textContent = (r.out ? "\n" : "") + r.err; pre.appendChild(s); }
+  if (!r.out && !r.err) pre.textContent = "(ran with no output)";
+};
+
+const fit = ta => { ta.rows = Math.max(4, ta.value.split("\n").length + 1); };
+const keys = (ta, run) => ta.addEventListener("keydown", e => {
+  if (e.key === "Tab") { e.preventDefault(); const s = ta.selectionStart; ta.setRangeText("    ", s, ta.selectionEnd, "end"); }
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+});
+
+for (const ide of $$(".ide[data-run]")) {
+  const ta = ide.querySelector("textarea"), original = ta.value;
+  fit(ta); ta.addEventListener("input", () => fit(ta));
+  let stdinBox = null;
+  if (ide.dataset.stdin !== undefined) {
+    const w = document.createElement("div"); w.className = "stdwrap";
+    w.innerHTML = '<span>Input box: what the user types, one answer per line</span>';
+    stdinBox = document.createElement("textarea"); stdinBox.className = "stdin"; stdinBox.value = ide.dataset.stdin; stdinBox.setAttribute("aria-label", "Program input, one line per answer");
+    w.appendChild(stdinBox); ide.appendChild(w);
+  }
+  const bar = document.createElement("div"); bar.className = "bar";
+  const runB = document.createElement("button"); runB.className = "go"; runB.textContent = "Run";
+  const resetB = document.createElement("button"); resetB.textContent = "Reset";
+  bar.append(runB, resetB);
+  const pre = document.createElement("pre"); pre.className = "out"; pre.setAttribute("aria-live", "polite");
+  ide.append(bar, pre);
+  const run = async () => {
+    runB.disabled = true; pre.textContent = "Running...";
+    const stdin = stdinBox ? stdinBox.value.split("\n").filter(l => l.length) : [];
+    const r = await runPy(ta.value, {stdin}); show(pre, r); runB.disabled = false;
+    if (ide.dataset.mark && !r.err && ta.value !== original) mark(ide.dataset.mark);
+  };
+  runB.addEventListener("click", run); keys(ta, run);
+  resetB.addEventListener("click", () => { ta.value = original; fit(ta); pre.textContent = ""; });
+}
+
+for (const q of $$(".mcq")) {
+  const id = q.dataset.mcq, ans = +q.dataset.answer, btns = [...q.querySelectorAll(".opts button")], why = q.querySelector(".why");
+  const reveal = pick => {
+    btns.forEach((b, i) => { b.disabled = true; if (i === ans) b.classList.add("right"); else if (i === pick) b.classList.add("wrong"); });
+    why.innerHTML = (pick === ans ? "<strong>Correct.</strong> " : "<strong>Not quite.</strong> ") + why.innerHTML; why.classList.add("show");
+  };
+  const saved = store.get(id); if (saved !== null) reveal(saved);
+  btns.forEach((b, i) => b.addEventListener("click", () => { store.set(id, i); reveal(i); mark(id); }));
+}
+
+const TESTS = [
+  {call: 'calc_total(12.50, 5)', want: 56.25},
+  {call: 'calc_total(9.99, 3)', want: 29.97},
+  {call: 'calc_total(25.00, 2)', want: 50.0},
+  {call: 'format_line("Python Basics", 12.5, 5)', want: "Python Basics x5: $62.50"},
+  {call: 'format_line("SQL Intro", 9.99, 3)', want: "SQL Intro x3: $29.97"}
+];
+const pta = $("#practiceIde textarea"), pOriginal = pta.value, pout = $("#pout");
+fit(pta); pta.addEventListener("input", () => { fit(pta); store.set("practiceCode", pta.value); });
+const savedCode = store.get("practiceCode"); if (savedCode) { pta.value = savedCode; fit(pta); }
+const prun = async () => { $("#prun").disabled = true; pout.textContent = "Running..."; show(pout, await runPy(pta.value)); $("#prun").disabled = false; };
+$("#prun").addEventListener("click", prun); keys(pta, prun);
+$("#preset").addEventListener("click", () => { pta.value = pOriginal; fit(pta); pout.textContent = ""; $("#presults").innerHTML = ""; store.set("practiceCode", null); });
+const fmt = v => typeof v === "string" ? JSON.stringify(v) : String(v);
+$("#pcheck").addEventListener("click", async () => {
+  $("#pcheck").disabled = true; const items = [];
+  for (const t of TESTS) {
+    const r = await runPy(pta.value + "\n__result = " + t.call);
+    let msg, ok = false;
+    if (r.err) msg = r.err.includes("NameError") ? "I can't find that function. Check the name and spelling." : "Error: " + r.err;
+    else {
+      const got = r.ns.get("__result");
+      if (got === undefined) msg = "returned None. Did you print instead of return?";
+      else if (typeof t.want === "number" && typeof got === "number" && Math.abs(got - t.want) < 0.005) { ok = true; msg = "returned " + fmt(got) + ". Correct!"; }
+      else if (got === t.want) { ok = true; msg = "returned " + fmt(got) + ". Correct!"; }
+      else msg = "returned " + fmt(got) + ", expected " + fmt(t.want) + ".";
+    }
+    items.push({ok, text: t.call + ": " + msg});
+  }
+  $("#presults").innerHTML = "";
+  for (const it of items) { const li = document.createElement("li"); li.className = it.ok ? "pass" : "fail"; li.textContent = (it.ok ? "✓ " : "✗ ") + it.text; $("#presults").appendChild(li); }
+  const passed = items.filter(i => i.ok).length;
+  store.set("practiceBest", Math.max(passed, store.get("practiceBest") || 0));
+  if (passed === items.length) mark("practice");
+  buildLink();
+  $("#pcheck").disabled = false;
+});
+
+$$("[data-hint]").forEach(b => b.addEventListener("click", () => {
+  const n = +b.dataset.hint; $("#hint" + n).classList.add("show"); b.disabled = true;
+  const next = document.querySelector('[data-hint="' + (n + 1) + '"]'); if (next) next.disabled = false;
+}));
+
+for (const id of ["r1", "r2"]) {
+  const t = $("#" + id); t.value = store.get(id) || "";
+  t.addEventListener("input", () => { store.set(id, t.value); if ($("#r1").value.trim() && $("#r2").value.trim()) mark("reflect"); });
+}
+$("#copy").addEventListener("click", async () => {
+  const text = "Week 2 reflection\n1. " + $("#r1").value + "\n2. " + $("#r2").value;
+  try { await navigator.clipboard.writeText(text); $("#copied").textContent = "Copied!"; }
+  catch (e) { $("#copied").textContent = "Copy was blocked. Select the text and copy it manually."; }
+});
+
+const FORM = "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=HR0ojU2c90uxbgMtFd6fbM9nfVf34TpHgl6pKq55rp1UOFRJMEEwRDFUNkRBN1o4SDVCU1g0VDdXUC4u";
+const F = {name: "r2c0208ff4dd943f688e7c47df23cfa7a", email: "r010a9dd649704948bb6a24a94fd40f4b", week: "r879ad0bfabbf4e7893a2ead1008854e4",
+  milestones: "r661ec63aa6f7427e97b1f409235c37d4", checkpoints: "r11275b25ec40449fae497419ae9f5924", practice: "rf9c32ca2f9844b9889a973868008f260",
+  score: "rabb8296b553f49d78ee761a46b0ca71b", r1: "rb9d14dd306224e73b7f465e89ed5f485", r2: "r3eb92c6e1f7243cc87abf9983656f5c1"};
+const WEEK = "Week 2";
+const LABELS = {cp1: "Checkpoint 1", cp2: "Checkpoint 2", cp3: "Checkpoint 3", practice: "Practice task", extension: "Extension", reflect: "Reflection"};
+const clip = (s, n) => s.length > n ? s.slice(0, n) + "..." : s;
+function buildLink() {
+  const doneList = MILESTONES.filter(m => done.has(m));
+  const milestones = doneList.length + " of " + MILESTONES.length + (doneList.length ? ": " + doneList.map(m => LABELS[m]).join(", ") : "");
+  const checkpoints = $$(".mcq").map((q, i) => {
+    const pick = store.get(q.dataset.mcq);
+    if (pick === null) return "CP" + (i + 1) + ": not answered";
+    const text = q.querySelectorAll(".opts button")[pick].textContent;
+    return "CP" + (i + 1) + ": " + text + (pick === +q.dataset.answer ? " (correct)" : " (incorrect)");
+  }).join("; ");
+  const best = store.get("practiceBest") || 0;
+  const practice = done.has("practice") ? "Passed all tests" : best > 0 ? "Passed some tests" : "Not attempted";
+  const vals = {name: $("#sname").value.trim(), email: $("#semail").value.trim(), week: '"' + WEEK + '"', milestones, checkpoints,
+    practice: '"' + practice + '"', r1: clip($("#r1").value.trim(), 900), r2: clip($("#r2").value.trim(), 900)};
+  const q = Object.entries(vals).filter(([k, v]) => v).map(([k, v]) => F[k] + "=" + encodeURIComponent(v)).join("&");
+  const link = $("#submitLink");
+  link.href = FORM + "&" + q;
+  const ready = vals.name && vals.email;
+  link.classList.toggle("off", !ready);
+  link.setAttribute("aria-disabled", String(!ready));
+  $("#summary").textContent = (ready ? "" : "Add your name and email to enable the button. ") + "Will submit: " + milestones + ". Practice task: " + practice + ".";
+}
+for (const id of ["sname", "semail"]) {
+  const t = $("#" + id); t.value = store.get(id) || "";
+  t.addEventListener("input", () => { store.set(id, t.value); buildLink(); });
+}
+$("#submitLink").addEventListener("click", buildLink);
+for (const id of ["r1", "r2"]) $("#" + id).addEventListener("input", buildLink);
+
+paint();
+buildLink();
+}
+</script>
+</body>
+</html>
